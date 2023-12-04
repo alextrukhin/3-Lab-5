@@ -1,5 +1,5 @@
-﻿using DAL;
-using BLL;
+﻿using BLL;
+using DAL;
 using System.Reflection;
 using System.Text;
 
@@ -200,16 +200,35 @@ namespace PL
         }
         public void ShowSearch()
         {
-            List<Tuple<int, Entity>> searchList = People.Search();
             Console.Clear();
-            Console.WriteLine("Search: " + searchList.Count + " items ");
+            List<Tuple<int, Entity>> search1List = People.Search();
+            Console.WriteLine("Search (foreign students with honors in the 1st year): " + search1List.Count + " items ");
             int currentIndex = 0;
-            while (currentIndex < searchList.Count)
+            while (currentIndex < search1List.Count)
             {
-                Console.WriteLine(1 + searchList[currentIndex].Item1 + ". " + searchList[currentIndex].Item2);
+                Console.WriteLine(1 + search1List[currentIndex].Item1 + ". " + search1List[currentIndex].Item2);
                 currentIndex++;
             }
-            Console.WriteLine("0 - menu");
+            List<Tuple<int, Entity>> search2List = People.Search((Entity input) =>
+            {
+                if (input is Student)
+                {
+                    Student student = input as Student;
+                    if (student is not null)
+                    {
+                        if (student.ForeignPassportNumber != null && student.Course >= 5) return true;
+                    }
+                }
+                return false;
+            });
+            Console.WriteLine("\nSearch (The possibility of obtaining Ukrainian citizenship after living in Ukraine for 5+ years): " + search2List.Count + " items ");
+            currentIndex = 0;
+            while (currentIndex < search2List.Count)
+            {
+                Console.WriteLine(1 + search2List[currentIndex].Item1 + ". " + search2List[currentIndex].Item2);
+                currentIndex++;
+            }
+            Console.WriteLine("\n0 - menu");
 
             bool done = false;
             do
@@ -245,7 +264,8 @@ namespace PL
                         {
                             People.SetProvider(input);
                             return;
-                        }catch (Exception) { Console.WriteLine("Wrong input"); continue; }
+                        }
+                        catch (Exception) { Console.WriteLine("Wrong input"); continue; }
                 }
             }
             while (!done);
